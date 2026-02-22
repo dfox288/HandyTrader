@@ -5,13 +5,15 @@
 	"name": "Handy Traders",
 	"description": "Star your favorite villager trades. Favorited trades get a gold highlight so you can find them instantly in long trade lists.",
 	"authors": [
-		"RezanMB"
+		"D.Fox"
 	],
 	"contact": {
-		"sources": "https://github.com/rezanmb/HandyTraders",
-		"issues": "https://github.com/rezanmb/HandyTraders/issues"
+		"homepage": "https://github.com/dfox288/HandyTrader",
+		"sources": "https://github.com/dfox288/HandyTrader",
+		"issues": "https://github.com/dfox288/HandyTrader/issues"
 	},
 	"license": "MIT",
+	"icon": "assets/handytraders/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [

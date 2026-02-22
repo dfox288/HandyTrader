@@ -56,10 +56,16 @@ public final class TradeFavorites {
 				Map<String, VillagerData> loaded = GSON.fromJson(reader, DATA_TYPE);
 				if (loaded != null) {
 					data = loaded;
+					int totalFavs = loaded.values().stream()
+							.mapToInt(vd -> vd.favorites.size()).sum();
+					HandyTraders.LOGGER.info("Loaded {} favorites for {} villagers from {}",
+							totalFavs, loaded.size(), FAVORITES_PATH);
 				}
 			} catch (Exception e) {
 				HandyTraders.LOGGER.warn("Failed to load trade favorites", e);
 			}
+		} else {
+			HandyTraders.LOGGER.info("No favorites file at {}", FAVORITES_PATH);
 		}
 	}
 

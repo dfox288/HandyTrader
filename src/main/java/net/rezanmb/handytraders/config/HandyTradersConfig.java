@@ -22,9 +22,6 @@ public class HandyTradersConfig {
 			.getConfigDir().resolve("handytraders.json");
 
 	public boolean enableFavorites = true;
-	public boolean sortFavoritesToTop = false;
-	public boolean showStarButton = true;
-	public boolean playSounds = true;
 
 	public static HandyTradersConfig get() {
 		if (INSTANCE == null) {

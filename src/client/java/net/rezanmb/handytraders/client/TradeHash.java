@@ -25,12 +25,12 @@ public final class TradeHash {
 
 	private static String itemKey(ItemStack stack) {
 		if (stack.isEmpty()) return "";
-		StringBuilder sb = new StringBuilder();
-		sb.append(BuiltInRegistries.ITEM.getKey(stack.getItem()));
-		sb.append("x").append(stack.getCount());
-		// Include component data hash to distinguish enchanted books, potions, etc.
-		// getComponents() includes enchantments, stored enchantments, potion contents, etc.
-		sb.append("#").append(stack.getComponents().hashCode());
-		return sb.toString();
+		// Use only registry name + count for a stable, JVM-restart-safe hash.
+		// getComponents().hashCode() is NOT stable across restarts and caused
+		// favorites to be lost on mod update / game restart.
+		// This is sufficient for villager trades — identical item+count combos
+		// with different components (e.g. two enchanted books at the same price)
+		// are extremely rare in vanilla trading.
+		return BuiltInRegistries.ITEM.getKey(stack.getItem()) + "x" + stack.getCount();
 	}
 }
