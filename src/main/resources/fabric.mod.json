@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "handytraders",
 	"version": "${version}",
-	"name": "Handy Traders",
+	"name": "Handy Trader",
 	"description": "Star your favorite villager trades. Favorited trades get a gold highlight so you can find them instantly in long trade lists.",
 	"authors": [
 		"D.Fox"
