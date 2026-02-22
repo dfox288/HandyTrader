@@ -1,0 +1,19 @@
+# gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Minecraft
+run/

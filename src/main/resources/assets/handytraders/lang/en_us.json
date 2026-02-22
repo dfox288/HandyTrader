@@ -1,0 +1,13 @@
+{
+	"config.handytraders.title": "Handy Traders Settings",
+
+	"config.handytraders.category.general": "General",
+	"config.handytraders.enableFavorites": "Enable Favorites",
+	"config.handytraders.enableFavorites.desc": "Allow starring and highlighting favorite trades on villagers.",
+	"config.handytraders.sortFavoritesToTop": "Sort Favorites to Top",
+	"config.handytraders.sortFavoritesToTop.desc": "Move favorited trades to the top of the trade list. (Coming soon)",
+	"config.handytraders.showStarButton": "Show Star Button",
+	"config.handytraders.showStarButton.desc": "Show a clickable star indicator on each trade row.",
+	"config.handytraders.playSounds": "Play Sounds",
+	"config.handytraders.playSounds.desc": "Play a chime sound when toggling trade favorites."
+}
