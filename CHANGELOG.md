@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.1
+
+### Bug Fixes
+- **Fix trade selection desync when favorites are sorted** — clicking a sorted trade row now correctly tells the server which trade was selected, fixing the issue where items would flash in/out of payment slots or trades would silently fail
+- **Fix selection preservation on bookmark toggle** — toggling a bookmark mid-session no longer desyncs the selected trade; the previously selected trade stays selected at its new sorted position
+- **Handle server-side offer refresh** — when a villager restocks or levels up, the mod now detects the new offers and re-applies favorite sorting instead of showing stale data
+
+### Technical
+- Replaced non-functional `@ModifyArg` on `ServerboundSelectTradePacket` constructor with `@Inject`-based interception of `postButtonClick` for reliable trade index remapping
+- Added `lastKnownOffers` reference tracking to detect server-side offer replacements
+
 ## v1.0.0
 
 Initial release for Minecraft 1.21.11 (Fabric).

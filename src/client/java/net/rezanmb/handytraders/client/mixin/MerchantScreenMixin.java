@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundSelectTradePacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,7 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -33,13 +34,14 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	@Shadow private int shopItem;
 	@Shadow int scrollOff;
-
 	@Unique private UUID handytraders$villagerUUID;
 	@Unique private boolean handytraders$needsSort = true;
 	/** Maps sorted index -> original server index. Null when no reordering active. */
 	@Unique private int[] handytraders$sortedToActual;
 	/** Snapshot of the server's original offer order, captured before first sort. */
 	@Unique private List<MerchantOffer> handytraders$originalOffers;
+	/** Tracks the MerchantOffers reference to detect server-side replacements (restock/level-up). */
+	@Unique private MerchantOffers handytraders$lastKnownOffers;
 
 	@Unique private static final int BOOKMARK_SIZE = 7;
 	@Unique private static final int BOOKMARK_INSET = 1;
@@ -61,6 +63,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		}
 		this.handytraders$needsSort = true;
 		this.handytraders$originalOffers = null;
+		this.handytraders$lastKnownOffers = null;
 	}
 
 	// -- Sort favorites to top --
@@ -68,9 +71,49 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	@Inject(method = "renderContents", at = @At("HEAD"))
 	private void handytraders$sortIfNeeded(GuiGraphics guiGraphics, int mouseX, int mouseY,
 										   float partialTick, CallbackInfo ci) {
+		// Detect server-side offer replacement (restock, level-up, etc.)
+		MerchantOffers currentOffers = this.menu.getOffers();
+		if (handytraders$lastKnownOffers != null && currentOffers != handytraders$lastKnownOffers) {
+			handytraders$originalOffers = null;
+			handytraders$needsSort = true;
+		}
+		handytraders$lastKnownOffers = currentOffers;
+
 		if (!handytraders$needsSort) return;
 		handytraders$needsSort = false;
+
+		// On a re-sort (bookmark toggle or offer refresh), track which actual trade
+		// was selected so we can preserve the selection across the reorder.
+		boolean isResort = handytraders$sortedToActual != null;
+		int oldActualIndex = -1;
+		if (isResort && shopItem >= 0 && shopItem < handytraders$sortedToActual.length) {
+			oldActualIndex = handytraders$sortedToActual[shopItem];
+		}
+
 		handytraders$sortOffers();
+
+		if (isResort && oldActualIndex >= 0) {
+			// Find where the previously selected trade moved in the new sort order
+			if (handytraders$sortedToActual != null) {
+				for (int i = 0; i < handytraders$sortedToActual.length; i++) {
+					if (handytraders$sortedToActual[i] == oldActualIndex) {
+						shopItem = i;
+						break;
+					}
+				}
+			} else {
+				// No favorites — offers restored to original order
+				shopItem = oldActualIndex;
+			}
+			// Update the container's selection hint so the result slot stays correct.
+			// Do NOT call postButtonClick() here — it sends a network packet and moves
+			// items during rendering, causing race conditions with the server that
+			// make items flash in and out of payment slots.
+			this.menu.setSelectionHint(shopItem);
+		}
+		// On initial sort (screen open): shopItem stays at 0, which selects the
+		// first trade in sorted order (the top favorite). No setSelectionHint needed
+		// since the container's default selectionHint is also 0.
 	}
 
 	@Unique
@@ -81,7 +124,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 			return;
 		}
 
-		// Capture the server's original order on first sort
+		// Capture the server's original order on first sort (or after server refresh)
 		if (handytraders$originalOffers == null || handytraders$originalOffers.size() != offers.size()) {
 			handytraders$originalOffers = new ArrayList<>(offers);
 		}
@@ -129,19 +172,33 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	}
 
 	/**
-	 * Remap the trade index in the server-bound packet from sorted order
-	 * back to the server's original order.
+	 * Intercept postButtonClick to remap the trade index in the server-bound packet
+	 * from sorted order back to the server's original order.
+	 *
+	 * We replace the entire method rather than using @ModifyArg because the
+	 * @ModifyArg on ServerboundSelectTradePacket.<init> doesn't fire at runtime
+	 * (likely a Mixin/mapping issue with constructor argument modification).
 	 */
-	@ModifyArg(method = "postButtonClick",
-			at = @At(value = "INVOKE",
-					target = "Lnet/minecraft/network/protocol/game/ServerboundSelectTradePacket;<init>(I)V"),
-			index = 0)
-	private int handytraders$remapTradeIndex(int sortedIndex) {
-		if (handytraders$sortedToActual != null
-				&& sortedIndex >= 0 && sortedIndex < handytraders$sortedToActual.length) {
-			return handytraders$sortedToActual[sortedIndex];
+	@Inject(method = "postButtonClick", at = @At("HEAD"), cancellable = true)
+	private void handytraders$remapPostButtonClick(CallbackInfo ci) {
+		if (handytraders$sortedToActual == null) {
+			// No sorting active — let vanilla handle it unmodified
+			return;
 		}
-		return sortedIndex;
+
+		// Do what vanilla postButtonClick does:
+		// 1. setSelectionHint uses sorted index (correct for sorted client offers)
+		this.menu.setSelectionHint(this.shopItem);
+		// 2. tryMoveItems uses sorted index (correct for sorted client offers)
+		this.menu.tryMoveItems(this.shopItem);
+		// 3. Send packet with ACTUAL (original) index so the server selects the right trade
+		int actualIndex = this.shopItem;
+		if (this.shopItem >= 0 && this.shopItem < handytraders$sortedToActual.length) {
+			actualIndex = handytraders$sortedToActual[this.shopItem];
+		}
+		Minecraft.getInstance().getConnection().send(new ServerboundSelectTradePacket(actualIndex));
+
+		ci.cancel();
 	}
 
 	// -- Render favorites overlay --
