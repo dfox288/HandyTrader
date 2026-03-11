@@ -1,7 +1,7 @@
 package net.rezanmb.handytraders.client.mixin;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -68,8 +68,8 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	// -- Sort favorites to top --
 
-	@Inject(method = "renderContents", at = @At("HEAD"))
-	private void handytraders$sortIfNeeded(GuiGraphics guiGraphics, int mouseX, int mouseY,
+	@Inject(method = "extractContents", at = @At("HEAD"))
+	private void handytraders$sortIfNeeded(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
 										   float partialTick, CallbackInfo ci) {
 		// Detect server-side offer replacement (restock, level-up, etc.)
 		MerchantOffers currentOffers = this.menu.getOffers();
@@ -203,8 +203,8 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	// -- Render favorites overlay --
 
-	@Inject(method = "renderContents", at = @At("TAIL"))
-	private void handytraders$renderFavorites(GuiGraphics guiGraphics, int mouseX, int mouseY,
+	@Inject(method = "extractContents", at = @At("TAIL"))
+	private void handytraders$renderFavorites(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
 											  float partialTick, CallbackInfo ci) {
 		if (handytraders$villagerUUID == null) return;
 		if (!HandyTradersConfig.get().enableFavorites) return;
@@ -244,7 +244,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	}
 
 	@Unique
-	private void handytraders$drawBookmarkCorner(GuiGraphics g, int x, int y,
+	private void handytraders$drawBookmarkCorner(GuiGraphicsExtractor g, int x, int y,
 												 int fillColor, int highlightColor, int shadowColor) {
 		// Fill the triangle body
 		for (int row = 0; row < BOOKMARK_SIZE; row++) {
