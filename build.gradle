@@ -1,6 +1,7 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
+	id 'com.modrinth.minotaur' version '2.+'
 }
 
 version = project.mod_version
@@ -68,6 +69,7 @@ jar {
 	}
 }
 
+// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
@@ -75,6 +77,46 @@ publishing {
 			from components.java
 		}
 	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
+		// Add repositories to publish to here.
 	}
+}
+
+// Modrinth publishing — run with ./gradlew modrinth
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN")
+	projectId = "j5oLffcp"
+	versionNumber = project.mod_version
+	versionType = project.mod_version.contains("-beta") ? "beta" :
+	              project.mod_version.contains("-alpha") ? "alpha" :
+	              project.mod_version.contains("-rc") ? "beta" : "release"
+	uploadFile = jar
+	gameVersions = [project.minecraft_version]
+	loaders = ["fabric"]
+	changelog = rootProject.file("CHANGELOG.md").exists() ? extractChangelog(rootProject.file("CHANGELOG.md").text, project.mod_version) : ""
+	dependencies {
+		required.project "fabric-api"
+	}
+}
+
+// Extract the changelog section for a specific version from CHANGELOG.md
+static String extractChangelog(String content, String version) {
+	def lines = content.split('\n')
+	def capture = false
+	def result = []
+	for (line in lines) {
+		if (line.matches("(?i)^## .*${java.util.regex.Pattern.quote(version)}.*")) {
+			capture = true
+			continue
+		}
+		if (capture && line.matches("^## .*")) {
+			break
+		}
+		if (capture) {
+			result << line
+		}
+	}
+	return result.join('\n').trim()
 }
