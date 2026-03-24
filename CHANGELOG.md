@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.0
+
+- Port to Minecraft 26.1 (Java 25, unobfuscated)
+- Restore YACL config screen integration
+
 ## 2.0.0-beta.1
 
 - Port to Minecraft 26.1-rc-1 (Java 25, unobfuscated)
