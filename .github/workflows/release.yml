@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate tag matches mod version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          MOD_VERSION=$(grep '^mod_version=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          if [ "$TAG_VERSION" != "$MOD_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match mod_version ($MOD_VERSION) in gradle.properties"
+            exit 1
+          fi
+          echo "VERSION=$TAG_VERSION" >> "$GITHUB_ENV"
+
+      - name: Validate Minecraft version stability
+        run: |
+          MC_VERSION=$(grep '^minecraft_version=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          # Check if tag is a stable release (no pre-release suffix)
+          if ! echo "$TAG_VERSION" | grep -qE '-(beta|alpha|rc)'; then
+            # Stable release — MC version must also be stable
+            if echo "$MC_VERSION" | grep -qE '-(pre|rc|snapshot)'; then
+              echo "::error::Stable release ($TAG_VERSION) cannot target pre-release Minecraft version ($MC_VERSION)"
+              exit 1
+            fi
+          fi
+          echo "MC_VERSION=$MC_VERSION" >> "$GITHUB_ENV"
+
+      - name: Determine pre-release status
+        run: |
+          if echo "$VERSION" | grep -qE '-(beta|alpha|rc)'; then
+            echo "IS_PRERELEASE=true" >> "$GITHUB_ENV"
+          else
+            echo "IS_PRERELEASE=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Extract changelog
+        run: |
+          # Extract the section for this version from CHANGELOG.md
+          # Looks for ## [version] or ## version header, captures until next ## header
+          if [ -f CHANGELOG.md ]; then
+            # Extract content between this version's header and the next one
+            CHANGELOG=$(sed -n "/^## .*${VERSION}/,/^## /{/^## .*${VERSION}/d;/^## /d;p}" CHANGELOG.md | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba}')
+            if [ -n "$CHANGELOG" ]; then
+              echo "Found changelog for version $VERSION"
+            else
+              CHANGELOG="Release $VERSION"
+              echo "No changelog entry found for $VERSION, using default"
+            fi
+          else
+            CHANGELOG="Release $VERSION"
+            echo "No CHANGELOG.md found, using default"
+          fi
+          # Write to file for multi-line support
+          echo "$CHANGELOG" > /tmp/changelog.txt
+          echo "CHANGELOG_FILE=/tmp/changelog.txt" >> "$GITHUB_ENV"
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Find mod jar
+        id: find-jar
+        run: |
+          JAR=$(find build/libs -name "*.jar" ! -name "*-sources.jar" ! -name "*-dev.jar" -print | sort | head -1)
+          if [ -z "$JAR" ]; then
+            echo "::error::No mod jar found in build/libs/"
+            exit 1
+          fi
+          echo "jar_path=$JAR" >> "$GITHUB_OUTPUT"
+          echo "Selected jar: $JAR"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ env.VERSION }}
+          files: ${{ steps.find-jar.outputs.jar_path }}
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
+          body_path: ${{ env.CHANGELOG_FILE }}
+
+      - name: Publish to Modrinth
+        run: ./gradlew modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}

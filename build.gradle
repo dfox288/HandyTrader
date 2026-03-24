@@ -1,6 +1,7 @@
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
+	id 'com.modrinth.minotaur' version '2.+'
 }
 
 version = project.mod_version
@@ -11,8 +12,8 @@ base {
 }
 
 repositories {
-	maven { url = "https://maven.isxander.dev/releases" }
 	maven { url = "https://maven.terraformersmc.com/" }
+	maven { url = "https://api.modrinth.com/maven" }
 }
 
 loom {
@@ -28,21 +29,20 @@ loom {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// Config screen (YACL) and mod menu integration — both optional at runtime
-	modCompileOnly("dev.isxander:yet-another-config-lib:${project.yacl_version}") {
+	compileOnly("maven.modrinth:yacl:${project.yacl_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
-	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
 	// Include in dev runtime for testing the config screen
-	modLocalRuntime("dev.isxander:yet-another-config-lib:${project.yacl_version}") {
+	localRuntime("maven.modrinth:yacl:${project.yacl_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
-	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
+	localRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {
@@ -54,13 +54,13 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
 	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
@@ -69,6 +69,7 @@ jar {
 	}
 }
 
+// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
@@ -76,6 +77,46 @@ publishing {
 			from components.java
 		}
 	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
+		// Add repositories to publish to here.
 	}
+}
+
+// Modrinth publishing — run with ./gradlew modrinth
+modrinth {
+	token = System.getenv("MODRINTH_TOKEN")
+	projectId = "j5oLffcp"
+	versionNumber = project.mod_version
+	versionType = project.mod_version.contains("-beta") ? "beta" :
+	              project.mod_version.contains("-alpha") ? "alpha" :
+	              project.mod_version.contains("-rc") ? "beta" : "release"
+	uploadFile = jar
+	gameVersions = [project.minecraft_version]
+	loaders = ["fabric"]
+	changelog = rootProject.file("CHANGELOG.md").exists() ? extractChangelog(rootProject.file("CHANGELOG.md").text, project.mod_version) : ""
+	dependencies {
+		required.project "fabric-api"
+	}
+}
+
+// Extract the changelog section for a specific version from CHANGELOG.md
+static String extractChangelog(String content, String version) {
+	def lines = content.split('\n')
+	def capture = false
+	def result = []
+	for (line in lines) {
+		if (line.matches("(?i)^## .*${java.util.regex.Pattern.quote(version)}.*")) {
+			capture = true
+			continue
+		}
+		if (capture && line.matches("^## .*")) {
+			break
+		}
+		if (capture) {
+			result << line
+		}
+	}
+	return result.join('\n').trim()
 }
