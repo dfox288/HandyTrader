@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.1
+
+- Update to Minecraft 26.1.1 compatibility
+- Update Fabric Loader to 0.18.6, Fabric API to 0.145.3, YACL to 3.9.2
+
 ## 2.0.0
 
 - Port to Minecraft 26.1 (Java 25, unobfuscated)
