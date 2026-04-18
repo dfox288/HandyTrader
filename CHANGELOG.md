@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.2
+
+- Update to Minecraft 26.1.2 compatibility
+- Update Fabric Loader to 0.19.2, Fabric API to 0.146.1
+
 ## 2.0.1
 
 - Update to Minecraft 26.1.1 compatibility
