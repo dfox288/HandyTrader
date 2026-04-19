@@ -1,8 +1,10 @@
 # Handy Trader
 
-A Fabric mod for Minecraft 1.21.11 that lets you bookmark favorite villager trades.
+A Fabric mod for Minecraft 26.1.x that lets you bookmark favorite villager trades.
 
-Mark the trades you use most, and they'll sort to the top of the list — no more scrolling through a master librarian's 20+ offers to find Mending.
+Star the trades you use most and they sort to the top of the list automatically — perfect for big trading halls where you only use 2 out of 10 master trades per villager.
+
+[![Modrinth](https://img.shields.io/badge/Modrinth-handy--trader-green)](https://modrinth.com/project/handy-trader)
 
 ## Features
 
@@ -15,9 +17,9 @@ Mark the trades you use most, and they'll sort to the top of the list — no mor
 
 ## Requirements
 
-- Minecraft Java Edition 1.21.11
-- [Fabric Loader](https://fabricmc.net/use/installer/) 0.18.1+
-- [Fabric API](https://modrinth.com/mod/fabric-api) 0.139.5+
+- Minecraft Java Edition 26.1.x
+- [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.2+
+- [Fabric API](https://modrinth.com/mod/fabric-api) matching your Minecraft version
 
 ### Optional (for config screen)
 
@@ -30,7 +32,7 @@ Without these, everything works with sensible defaults. You can also edit `confi
 
 ### Single Player
 
-1. Install Fabric Loader for Minecraft 1.21.11
+1. Install Fabric Loader for Minecraft 26.1.x
 2. Download Fabric API and place it in your `mods/` folder
 3. Download Handy Trader and place it in your `mods/` folder
 4. Launch the game and open a villager trade screen!
@@ -58,6 +60,14 @@ cd HandyTrader
 # Run Minecraft with the mod loaded
 ./gradlew runClient
 ```
+
+## Part of the Handy series
+
+Small Fabric mods that smooth over vanilla friction points:
+
+- [Handy Shulker](https://modrinth.com/mod/handy-shulker) — bundle-like interactions for shulker boxes
+- [Handy Bookshelf](https://modrinth.com/mod/handy-bookshelf) — enchantment glint and name tags for chiseled bookshelves
+- [Handy Indicator](https://modrinth.com/mod/handy-indicator) — visual indicators on container blocks
 
 ## License
 
