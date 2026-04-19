@@ -2,6 +2,7 @@ plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 	id 'com.modrinth.minotaur' version '2.+'
+	id 'net.darkhax.curseforgegradle' version '1.2.30'
 }
 
 version = project.mod_version
@@ -99,6 +100,23 @@ modrinth {
 	dependencies {
 		required.project "fabric-api"
 	}
+}
+
+// CurseForge publishing — run with ./gradlew curseforge
+tasks.register('curseforge', net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+	dependsOn tasks.jar
+	apiToken = System.getenv("CURSEFORGE_TOKEN")
+
+	def mainFile = upload("1518594", jar)
+	mainFile.changelog = rootProject.file("CHANGELOG.md").exists() ? extractChangelog(rootProject.file("CHANGELOG.md").text, project.mod_version) : ""
+	mainFile.changelogType = 'markdown'
+	mainFile.releaseType = project.mod_version.contains("-beta") ? 'beta' :
+	                       project.mod_version.contains("-alpha") ? 'alpha' :
+	                       project.mod_version.contains("-rc") ? 'beta' : 'release'
+	mainFile.addModLoader('Fabric')
+	mainFile.addGameVersion(project.minecraft_version)
+	mainFile.addJavaVersion('Java 25')
+	mainFile.addRequirement('fabric-api')
 }
 
 // Extract the changelog section for a specific version from CHANGELOG.md
