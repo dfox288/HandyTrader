@@ -39,11 +39,12 @@ dependencies {
 	}
 	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-	// Include in dev runtime for testing the config screen
-	localRuntime("maven.modrinth:yacl:${project.yacl_version}") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-	localRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
+	// Dev runtime extras: disabled on port/26.2 until YACL + ModMenu ship 26.2-compatible
+	// builds. Mod behaviour is YACL-free so this doesn't affect smoke testing.
+	// localRuntime("maven.modrinth:yacl:${project.yacl_version}") {
+	// 	exclude(group: "net.fabricmc.fabric-api")
+	// }
+	// localRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0-beta.1
+
+- Preview build for Minecraft **26.2 snapshots** (tested against 26.2-snapshot-3)
+- Rebuilt against Fabric API 0.146.1+26.2
+- No source changes needed — the trade-menu mixins and favorites overlay compile cleanly against 26.2
+
 ## 2.0.2
 
 - Update to Minecraft 26.1.2 compatibility
