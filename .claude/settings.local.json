@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tail:*)",
+      "Bash(unzip:*)",
+      "Bash(grep:*)",
+      "Bash(gh release:*)",
+      "Bash(./gradlew wrapper:*)"
+    ]
+  }
+}
