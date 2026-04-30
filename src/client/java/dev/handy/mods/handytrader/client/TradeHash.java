@@ -6,6 +6,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+
 /**
  * Computes a stable hash for a MerchantOffer based on item IDs, counts,
  * and component data. This allows identifying the same trade across sessions
@@ -20,7 +25,13 @@ public final class TradeHash {
 		String key = itemKey(offer.getBaseCostA()) + "|" +
 				itemKey(offer.getCostB()) + "|" +
 				itemKey(offer.getResult());
-		return Long.toHexString(key.hashCode() & 0xFFFFFFFFL);
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			byte[] out = md.digest(key.getBytes(StandardCharsets.UTF_8));
+			return HexFormat.of().formatHex(out).substring(0, 16);
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException("SHA-1 unavailable", e);
+		}
 	}
 
 	private static String itemKey(ItemStack stack) {
