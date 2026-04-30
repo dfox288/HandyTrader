@@ -172,8 +172,19 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		List<Integer> favoriteIndices = new ArrayList<>();
 		List<Integer> otherIndices = new ArrayList<>(n);
 		for (int i = 0; i < n; i++) {
-			String hash = TradeHash.hash(handytrader$originalOffers.get(i));
-			if (TradeFavorites.isFavorite(handytrader$villagerUUID, hash)) {
+			MerchantOffer offer = handytrader$originalOffers.get(i);
+			String hash = TradeHash.hash(offer);
+			boolean isFav = TradeFavorites.isFavorite(handytrader$villagerUUID, hash);
+			if (!isFav) {
+				// Pre-2.1.0-beta.3 favorites were stored under a hashCode-based hash
+				// that won't match the new SHA-1 form. If this villager has one,
+				// rewrite it to the new format so the next session is clean.
+				String legacy = TradeHash.legacyHash(offer);
+				if (TradeFavorites.migrateLegacyHash(handytrader$villagerUUID, legacy, hash)) {
+					isFav = true;
+				}
+			}
+			if (isFav) {
 				favoriteIndices.add(i);
 			} else {
 				otherIndices.add(i);

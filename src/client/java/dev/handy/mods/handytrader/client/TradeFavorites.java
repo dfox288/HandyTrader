@@ -50,6 +50,21 @@ public final class TradeFavorites {
 		return vd != null && vd.favorites.contains(tradeHash);
 	}
 
+	/**
+	 * One-shot migration: if {@code legacyHash} exists in this villager's favorites,
+	 * replace it with {@code newHash} and return true. Used to upgrade favorites
+	 * stored under the pre-2.1.0-beta.3 hashCode-based format to the new SHA-1
+	 * format on first encounter, instead of silently orphaning them. The save is
+	 * dispatched off-thread by save() so the swap costs nothing at the call site.
+	 */
+	public static boolean migrateLegacyHash(UUID villagerUUID, String legacyHash, String newHash) {
+		VillagerData vd = data.get(villagerUUID.toString());
+		if (vd == null || !vd.favorites.remove(legacyHash)) return false;
+		vd.favorites.add(newHash);
+		save();
+		return true;
+	}
+
 	public static void toggleFavorite(UUID villagerUUID, String tradeHash) {
 		String key = villagerUUID.toString();
 		VillagerData vd = data.computeIfAbsent(key, k -> new VillagerData());
