@@ -100,13 +100,21 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 			oldActualIndex = handytrader$sortedToActual[shopItem];
 		}
 
-		handytrader$sortOffers();
+		// Capture the server's original order on first sort (or after server refresh).
+		// This stays as a side-effect — it's lazy memoization, not part of the sort
+		// decision proper.
+		if (handytrader$originalOffers == null || handytrader$originalOffers.size() != currentOffers.size()) {
+			handytrader$originalOffers = new ArrayList<>(currentOffers);
+		}
+
+		SortMapping mapping = handytrader$computeSortMapping();
+		handytrader$applyMapping(currentOffers, mapping);
 
 		if (isResort && oldActualIndex >= 0) {
 			// Find where the previously selected trade moved in the new sort order
-			if (handytrader$sortedToActual != null) {
-				for (int i = 0; i < handytrader$sortedToActual.length; i++) {
-					if (handytrader$sortedToActual[i] == oldActualIndex) {
+			if (mapping.sortedToActual() != null) {
+				for (int i = 0; i < mapping.sortedToActual().length; i++) {
+					if (mapping.sortedToActual()[i] == oldActualIndex) {
 						shopItem = i;
 						break;
 					}
@@ -126,32 +134,36 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		// since the container's default selectionHint is also 0.
 	}
 
+	/**
+	 * Result of a sort decision. {@code sortedToActual} is the index map from
+	 * sorted-client-order back to the server's original order, or {@code null} when
+	 * the original order should be preserved (no villager, favorites disabled, no
+	 * favorites set, or empty offers).
+	 */
 	@Unique
-	private void handytrader$sortOffers() {
-		MerchantOffers offers = this.menu.getOffers();
-		if (offers.isEmpty()) {
-			handytrader$sortedToActual = null;
-			return;
-		}
+	private record SortMapping(int[] sortedToActual) {
+		@Unique
+		private static final SortMapping ORIGINAL_ORDER = new SortMapping(null);
+	}
 
-		// Capture the server's original order on first sort (or after server refresh)
-		if (handytrader$originalOffers == null || handytrader$originalOffers.size() != offers.size()) {
-			handytrader$originalOffers = new ArrayList<>(offers);
+	/**
+	 * Compute the sort mapping from {@code handytrader$originalOffers}. Pure with
+	 * respect to the live offers list — only reads {@code originalOffers}, the
+	 * villager UUID, the favorites store, and config; never mutates instance state.
+	 */
+	@Unique
+	private SortMapping handytrader$computeSortMapping() {
+		if (handytrader$originalOffers == null || handytrader$originalOffers.isEmpty()) {
+			return SortMapping.ORIGINAL_ORDER;
 		}
-
 		if (handytrader$villagerUUID == null || !HandyTraderConfig.get().enableFavorites) {
-			// Restore original order
-			offers.clear();
-			offers.addAll(handytrader$originalOffers);
-			handytrader$sortedToActual = null;
-			return;
+			return SortMapping.ORIGINAL_ORDER;
 		}
 
-		// Always sort from the original server order
+		int n = handytrader$originalOffers.size();
 		List<Integer> favoriteIndices = new ArrayList<>();
-		List<Integer> otherIndices = new ArrayList<>();
-
-		for (int i = 0; i < handytrader$originalOffers.size(); i++) {
+		List<Integer> otherIndices = new ArrayList<>(n);
+		for (int i = 0; i < n; i++) {
 			String hash = TradeHash.hash(handytrader$originalOffers.get(i));
 			if (TradeFavorites.isFavorite(handytrader$villagerUUID, hash)) {
 				favoriteIndices.add(i);
@@ -159,25 +171,26 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 				otherIndices.add(i);
 			}
 		}
+		if (favoriteIndices.isEmpty()) return SortMapping.ORIGINAL_ORDER;
 
-		// No favorites — restore original order
-		if (favoriteIndices.isEmpty()) {
-			offers.clear();
-			offers.addAll(handytrader$originalOffers);
-			handytrader$sortedToActual = null;
-			return;
-		}
+		int[] sortedToActual = new int[n];
+		int idx = 0;
+		for (int i : favoriteIndices) sortedToActual[idx++] = i;
+		for (int i : otherIndices) sortedToActual[idx++] = i;
+		return new SortMapping(sortedToActual);
+	}
 
-		// Build mapping and reorder from the original
-		List<Integer> sortedOrder = new ArrayList<>();
-		sortedOrder.addAll(favoriteIndices);
-		sortedOrder.addAll(otherIndices);
-
-		handytrader$sortedToActual = sortedOrder.stream().mapToInt(Integer::intValue).toArray();
-
-		offers.clear();
-		for (int idx : handytrader$sortedToActual) {
-			offers.add(handytrader$originalOffers.get(idx));
+	/** Apply a sort mapping to the live offers list and update the cached mapping field. */
+	@Unique
+	private void handytrader$applyMapping(MerchantOffers liveOffers, SortMapping mapping) {
+		handytrader$sortedToActual = mapping.sortedToActual();
+		liveOffers.clear();
+		if (mapping.sortedToActual() == null) {
+			liveOffers.addAll(handytrader$originalOffers);
+		} else {
+			for (int srcIdx : mapping.sortedToActual()) {
+				liveOffers.add(handytrader$originalOffers.get(srcIdx));
+			}
 		}
 	}
 
