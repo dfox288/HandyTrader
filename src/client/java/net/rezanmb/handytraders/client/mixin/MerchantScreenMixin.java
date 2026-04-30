@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -172,33 +173,20 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	}
 
 	/**
-	 * Intercept postButtonClick to remap the trade index in the server-bound packet
-	 * from sorted order back to the server's original order.
-	 *
-	 * We replace the entire method rather than using @ModifyArg because the
-	 * @ModifyArg on ServerboundSelectTradePacket.<init> doesn't fire at runtime
-	 * (likely a Mixin/mapping issue with constructor argument modification).
+	 * Remap the trade index in the server-bound packet from sorted order back to
+	 * the server's original order. Surgical @Redirect on the packet constructor
+	 * preserves vanilla flow (setSelectionHint + tryMoveItems unchanged) and lets
+	 * other mods' mixins on postButtonClick run normally.
 	 */
-	@Inject(method = "postButtonClick", at = @At("HEAD"), cancellable = true)
-	private void handytraders$remapPostButtonClick(CallbackInfo ci) {
-		if (handytraders$sortedToActual == null) {
-			// No sorting active — let vanilla handle it unmodified
-			return;
+	@Redirect(method = "postButtonClick", at = @At(value = "NEW",
+			target = "(I)Lnet/minecraft/network/protocol/game/ServerboundSelectTradePacket;"))
+	private ServerboundSelectTradePacket handytraders$remapTradeIndex(int shopItem) {
+		if (handytraders$sortedToActual != null
+				&& shopItem >= 0
+				&& shopItem < handytraders$sortedToActual.length) {
+			return new ServerboundSelectTradePacket(handytraders$sortedToActual[shopItem]);
 		}
-
-		// Do what vanilla postButtonClick does:
-		// 1. setSelectionHint uses sorted index (correct for sorted client offers)
-		this.menu.setSelectionHint(this.shopItem);
-		// 2. tryMoveItems uses sorted index (correct for sorted client offers)
-		this.menu.tryMoveItems(this.shopItem);
-		// 3. Send packet with ACTUAL (original) index so the server selects the right trade
-		int actualIndex = this.shopItem;
-		if (this.shopItem >= 0 && this.shopItem < handytraders$sortedToActual.length) {
-			actualIndex = handytraders$sortedToActual[this.shopItem];
-		}
-		Minecraft.getInstance().getConnection().send(new ServerboundSelectTradePacket(actualIndex));
-
-		ci.cancel();
+		return new ServerboundSelectTradePacket(shopItem);
 	}
 
 	// -- Render favorites overlay --

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.3
+
+### Bug Fixes
+- **Restore compatibility with other mods that mix into the villager trade screen** — the trade-index remapping no longer cancels and reimplements vanilla `postButtonClick`, so bookmark mods, autoclickers, and any other mod injecting into the same method run normally again
+
 ## 2.0.2
 
 - Update to Minecraft 26.1.2 compatibility
