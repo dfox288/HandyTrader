@@ -15,6 +15,8 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Per-villager trade favorites storage.
@@ -33,6 +35,11 @@ public final class TradeFavorites {
 	private static final Path LEGACY_FAVORITES_PATH = FabricLoader.getInstance()
 			.getConfigDir().resolve("handytraders-favorites.json");
 	private static final Type DATA_TYPE = new TypeToken<Map<String, VillagerData>>() {}.getType();
+	private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
+		Thread t = new Thread(r, "HandyTrader-favorites-save");
+		t.setDaemon(true);
+		return t;
+	});
 
 	private static Map<String, VillagerData> data = new HashMap<>();
 
@@ -86,12 +93,18 @@ public final class TradeFavorites {
 	}
 
 	public static void save() {
-		try {
-			Files.createDirectories(FAVORITES_PATH.getParent());
-			Files.writeString(FAVORITES_PATH, GSON.toJson(data, DATA_TYPE));
-		} catch (IOException e) {
-			HandyTrader.LOGGER.warn("Failed to save trade favorites", e);
-		}
+		// Snapshot serialize on the caller thread so the daemon writer never races
+		// the render-thread mutator. Disk I/O is what we want off the render thread,
+		// not the in-memory toJson which is microseconds.
+		String json = GSON.toJson(data, DATA_TYPE);
+		SAVE_EXECUTOR.execute(() -> {
+			try {
+				Files.createDirectories(FAVORITES_PATH.getParent());
+				Files.writeString(FAVORITES_PATH, json);
+			} catch (IOException e) {
+				HandyTrader.LOGGER.warn("Failed to save trade favorites", e);
+			}
+		});
 	}
 
 	public static class VillagerData {
