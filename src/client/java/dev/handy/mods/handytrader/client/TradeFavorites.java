@@ -93,9 +93,11 @@ public final class TradeFavorites {
 	}
 
 	public static void save() {
-		// Snapshot serialize on the caller thread so the daemon writer never races
-		// the render-thread mutator. Disk I/O is what we want off the render thread,
-		// not the in-memory toJson which is microseconds.
+		// Serialize on the caller thread before queuing the I/O. This is *not* a
+		// snapshot — Gson iterates the live HashMap. Safety relies on save() only
+		// being invoked from the render thread, which is the sole mutator of `data`.
+		// If you ever call save() from another thread (e.g. a non-render config
+		// callback), wrap a defensive copy of `data` first.
 		String json = GSON.toJson(data, DATA_TYPE);
 		SAVE_EXECUTOR.execute(() -> {
 			try {
