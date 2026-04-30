@@ -55,7 +55,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		super(menu, playerInventory, title);
 	}
 
-	@Inject(method = "init", at = @At("TAIL"))
+	@Inject(method = "init()V", at = @At("TAIL"))
 	private void handytrader$captureVillager(CallbackInfo ci) {
 		Entity target = Minecraft.getInstance().crosshairPickEntity;
 		if (target != null) {
@@ -68,7 +68,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	// -- Sort favorites to top --
 
-	@Inject(method = "extractContents", at = @At("HEAD"))
+	@Inject(method = "extractContents(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At("HEAD"))
 	private void handytrader$sortIfNeeded(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
 										   float partialTick, CallbackInfo ci) {
 		// Detect server-side offer replacement (restock, level-up, etc.)
@@ -179,7 +179,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	 * @ModifyArg on ServerboundSelectTradePacket.<init> doesn't fire at runtime
 	 * (likely a Mixin/mapping issue with constructor argument modification).
 	 */
-	@Inject(method = "postButtonClick", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "postButtonClick()V", at = @At("HEAD"), cancellable = true)
 	private void handytrader$remapPostButtonClick(CallbackInfo ci) {
 		if (handytrader$sortedToActual == null) {
 			// No sorting active — let vanilla handle it unmodified
@@ -203,7 +203,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	// -- Render favorites overlay --
 
-	@Inject(method = "extractContents", at = @At("TAIL"))
+	@Inject(method = "extractContents(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At("TAIL"))
 	private void handytrader$renderFavorites(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
 											  float partialTick, CallbackInfo ci) {
 		if (handytrader$villagerUUID == null) return;
@@ -264,7 +264,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	// -- Bookmark click handling --
 
-	@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "mouseClicked(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z", at = @At("HEAD"), cancellable = true)
 	private void handytrader$onBookmarkClick(MouseButtonEvent event, boolean bl,
 											  CallbackInfoReturnable<Boolean> cir) {
 		if (handytrader$villagerUUID == null) return;
