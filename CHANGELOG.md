@@ -6,6 +6,15 @@
 - **Mod ID renamed from `handytraders` to `handytrader`** to match the rest of the Handy series convention (singular). Existing config (`config/handytraders.json`) and per-villager favorites (`config/handytraders-favorites.json`) are migrated automatically on first launch — no settings or favorites lost.
 - Internal package moved from `net.rezanmb.handytraders` to `dev.handy.mods.handytrader`. No user-facing impact unless another mod was depending on internal classes.
 
+### Changes
+- **Trade-identity hash upgraded from 32-bit hashCode to 64-bit truncated SHA-1.** Eliminates the silent collision risk where two distinct trades on the same villager could star/unstar each other. Existing favorites are rewritten to the new format the first time you reopen each villager — no manual reset needed, but villagers you never revisit stay on the old format.
+- **Mod is now declared client-only** (`environment: "client"`). Dedicated servers no longer load the jar; the mod was already client-only in behavior, this just makes it explicit.
+- **Favorites file write moved off the render thread** so toggling a bookmark on a slow disk no longer stalls the frame.
+- **Config persistence rebuilt on YACL `ConfigClassHandler`** (matches the rest of the Handy suite). On-disk JSON shape is unchanged; users without YACL installed still run on defaults.
+
+### Internal
+- Cleanup wave aligned this mod with the rest of the suite — JAVA_25 mixin compatibility level, full @At descriptors, named bookmark color palette, narrowed exception handlers, and a CI release workflow that no longer fails on prerelease tags.
+
 ## 2.1.0-beta.1
 
 - Preview build for Minecraft **26.2 snapshots** (tested against 26.2-snapshot-3)
