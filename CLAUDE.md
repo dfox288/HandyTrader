@@ -6,13 +6,13 @@ A Fabric mod that adds star/favorite toggles to the villager trading UI. Favorit
 
 ## Tech Stack
 
-- **Minecraft**: 26.1 (first unobfuscated version — no mappings needed)
-- **Fabric Loader**: 0.18.4
-- **Fabric API**: 0.144.0+26.1
+- **Minecraft**: 26.2-snapshot-5 (unobfuscated — no mappings needed)
+- **Fabric Loader**: 0.19.2
+- **Fabric API**: 0.147.1+26.2
 - **Fabric Loom**: 1.15.5
 - **Java**: 25
-- **YACL**: 3.9.0+26.1-fabric (soft dependency, via Modrinth Maven `maven.modrinth:yacl`)
-- **ModMenu**: 18.0.0-alpha.6 (soft dependency)
+- **YACL**: 3.9.2+26.1-fabric (soft dependency, via Modrinth Maven `maven.modrinth:yacl`)
+- **ModMenu**: 18.0.0-alpha.8 (soft dependency)
 
 ## Build
 
@@ -26,9 +26,9 @@ Always prefix commands with `cd /path &&` so they auto-approve via permission ru
 
 ## Project Structure
 
-Uses `splitEnvironmentSourceSets()`:
-- `src/main/` — shared code (client + server)
-- `src/client/` — client-only code (UI overlay, config screen)
+Client-only mod — `fabric.mod.json` declares `environment: "client"`, no main entrypoint. Uses `splitEnvironmentSourceSets()`:
+- `src/main/` — shared code (config class + LOGGER holder; loaded everywhere when present)
+- `src/client/` — client-only code (UI overlay, config screen, mixin)
 
 Package: `dev.handy.mods.handytrader` (mod-id: `handytrader`)
 
