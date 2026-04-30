@@ -1,15 +1,11 @@
 package dev.handy.mods.handytrader;
 
-import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HandyTrader implements ModInitializer {
+public final class HandyTrader {
 	public static final String MOD_ID = "handytrader";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	@Override
-	public void onInitialize() {
-		LOGGER.info("Handy Trader initialized");
-	}
+	private HandyTrader() {}
 }
