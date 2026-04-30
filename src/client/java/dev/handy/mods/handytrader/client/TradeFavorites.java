@@ -107,7 +107,7 @@ public final class TradeFavorites {
 		});
 	}
 
-	public static class VillagerData {
-		public Set<String> favorites = new HashSet<>();
+	private static final class VillagerData {
+		private Set<String> favorites = new HashSet<>();
 	}
 }
