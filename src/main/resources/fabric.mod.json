@@ -14,11 +14,8 @@
 	},
 	"license": "MIT",
 	"icon": "assets/handytrader/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
-		"main": [
-			"dev.handy.mods.handytrader.HandyTrader"
-		],
 		"client": [
 			"dev.handy.mods.handytrader.client.HandyTraderClient"
 		],
