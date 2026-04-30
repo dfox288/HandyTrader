@@ -27,7 +27,6 @@
 		]
 	},
 	"mixins": [
-		"handytrader.mixins.json",
 		{
 			"config": "handytrader.client.mixins.json",
 			"environment": "client"
