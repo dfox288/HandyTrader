@@ -2,6 +2,7 @@ package dev.handy.mods.handytrader.client;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -76,7 +77,7 @@ public final class TradeFavorites {
 					HandyTrader.LOGGER.info("Loaded {} favorites for {} villagers from {}",
 							totalFavs, loaded.size(), FAVORITES_PATH);
 				}
-			} catch (Exception e) {
+			} catch (IOException | JsonParseException e) {
 				HandyTrader.LOGGER.warn("Failed to load trade favorites", e);
 			}
 		} else {

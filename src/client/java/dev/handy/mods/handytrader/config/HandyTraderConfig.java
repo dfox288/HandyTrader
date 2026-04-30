@@ -2,6 +2,7 @@ package dev.handy.mods.handytrader.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import dev.handy.mods.handytrader.HandyTrader;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -52,7 +53,7 @@ public class HandyTraderConfig {
 				if (INSTANCE == null) {
 					INSTANCE = new HandyTraderConfig();
 				}
-			} catch (Exception e) {
+			} catch (IOException | JsonParseException e) {
 				HandyTrader.LOGGER.warn("Failed to load config, using defaults", e);
 				INSTANCE = new HandyTraderConfig();
 			}
