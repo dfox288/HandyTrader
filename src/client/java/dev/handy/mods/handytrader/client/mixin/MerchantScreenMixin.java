@@ -51,6 +51,16 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	@Unique private static final int BUTTON_HEIGHT = 20;
 	@Unique private static final int VISIBLE_BUTTONS = 7;
 
+	@Unique
+	private record BookmarkPalette(int fill, int highlight, int shadow) {}
+
+	@Unique private static final BookmarkPalette STAR_NORMAL =
+			new BookmarkPalette(0xFFDAA520, 0xFFFFD700, 0xFF8B6914);
+	@Unique private static final BookmarkPalette STAR_HOVER =
+			new BookmarkPalette(0xFFFFE850, 0xFFFFFF80, 0xFFC89020);
+	@Unique private static final BookmarkPalette EMPTY_HOVER =
+			new BookmarkPalette(0x50FFD700, 0x70FFE850, 0x50B8860B);
+
 	protected MerchantScreenMixin(MerchantMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
 	}
@@ -231,34 +241,30 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 					&& mouseY >= buttonY && mouseY < buttonY + hitSize;
 
 			if (isFavorite) {
-				int fill = isCornerHovered ? 0xFFFFE850 : 0xFFDAA520;
-				int highlight = isCornerHovered ? 0xFFFFFF80 : 0xFFFFD700;
-				int shadow = isCornerHovered ? 0xFFC89020 : 0xFF8B6914;
-				handytrader$drawBookmarkCorner(guiGraphics, cornerX, cornerY,
-						fill, highlight, shadow);
+				BookmarkPalette palette = isCornerHovered ? STAR_HOVER : STAR_NORMAL;
+				handytrader$drawBookmarkCorner(guiGraphics, cornerX, cornerY, palette);
 			} else if (isCornerHovered) {
-				handytrader$drawBookmarkCorner(guiGraphics, cornerX, cornerY,
-						0x50FFD700, 0x70FFE850, 0x50B8860B);
+				handytrader$drawBookmarkCorner(guiGraphics, cornerX, cornerY, EMPTY_HOVER);
 			}
 		}
 	}
 
 	@Unique
 	private void handytrader$drawBookmarkCorner(GuiGraphicsExtractor g, int x, int y,
-												 int fillColor, int highlightColor, int shadowColor) {
+												 BookmarkPalette palette) {
 		// Fill the triangle body
 		for (int row = 0; row < BOOKMARK_SIZE; row++) {
 			int width = BOOKMARK_SIZE - row;
-			g.fill(x, y + row, x + width, y + row + 1, fillColor);
+			g.fill(x, y + row, x + width, y + row + 1, palette.fill());
 		}
 		// Highlight: top edge
-		g.fill(x, y, x + BOOKMARK_SIZE, y + 1, highlightColor);
+		g.fill(x, y, x + BOOKMARK_SIZE, y + 1, palette.highlight());
 		// Highlight: left edge
-		g.fill(x, y, x + 1, y + BOOKMARK_SIZE, highlightColor);
+		g.fill(x, y, x + 1, y + BOOKMARK_SIZE, palette.highlight());
 		// Shadow: diagonal hypotenuse
 		for (int i = 0; i < BOOKMARK_SIZE; i++) {
 			g.fill(x + BOOKMARK_SIZE - 1 - i, y + i,
-					x + BOOKMARK_SIZE - i, y + i + 1, shadowColor);
+					x + BOOKMARK_SIZE - i, y + i + 1, palette.shadow());
 		}
 	}
 
