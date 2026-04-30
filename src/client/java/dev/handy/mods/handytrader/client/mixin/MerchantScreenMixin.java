@@ -78,10 +78,14 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	// -- Sort favorites to top --
 
-	@Inject(method = "extractContents(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At("HEAD"))
-	private void handytrader$sortIfNeeded(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
-										   float partialTick, CallbackInfo ci) {
-		// Detect server-side offer replacement (restock, level-up, etc.)
+	/**
+	 * Detect a server-side offer replacement (restock, level-up, etc.) and run the
+	 * sort once, gated on the {@code needsSort} flag. Runs on the screen's tick
+	 * (20 Hz) instead of every render frame — only the bookmark overlay needs the
+	 * render hook, and that lives on the extractContents TAIL inject below.
+	 */
+	@Inject(method = "tick()V", at = @At("HEAD"))
+	private void handytrader$tickSortIfNeeded(CallbackInfo ci) {
 		MerchantOffers currentOffers = this.menu.getOffers();
 		if (handytrader$lastKnownOffers != null && currentOffers != handytrader$lastKnownOffers) {
 			handytrader$originalOffers = null;
