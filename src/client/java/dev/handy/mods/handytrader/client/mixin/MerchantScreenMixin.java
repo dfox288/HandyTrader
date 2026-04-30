@@ -1,4 +1,4 @@
-package net.rezanmb.handytraders.client.mixin;
+package dev.handy.mods.handytrader.client.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,9 +13,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
-import net.rezanmb.handytraders.client.TradeFavorites;
-import net.rezanmb.handytraders.client.TradeHash;
-import net.rezanmb.handytraders.config.HandyTradersConfig;
+import dev.handy.mods.handytrader.client.TradeFavorites;
+import dev.handy.mods.handytrader.client.TradeHash;
+import dev.handy.mods.handytrader.config.HandyTraderConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -34,14 +34,14 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 	@Shadow private int shopItem;
 	@Shadow int scrollOff;
-	@Unique private UUID handytraders$villagerUUID;
-	@Unique private boolean handytraders$needsSort = true;
+	@Unique private UUID handytrader$villagerUUID;
+	@Unique private boolean handytrader$needsSort = true;
 	/** Maps sorted index -> original server index. Null when no reordering active. */
-	@Unique private int[] handytraders$sortedToActual;
+	@Unique private int[] handytrader$sortedToActual;
 	/** Snapshot of the server's original offer order, captured before first sort. */
-	@Unique private List<MerchantOffer> handytraders$originalOffers;
+	@Unique private List<MerchantOffer> handytrader$originalOffers;
 	/** Tracks the MerchantOffers reference to detect server-side replacements (restock/level-up). */
-	@Unique private MerchantOffers handytraders$lastKnownOffers;
+	@Unique private MerchantOffers handytrader$lastKnownOffers;
 
 	@Unique private static final int BOOKMARK_SIZE = 7;
 	@Unique private static final int BOOKMARK_INSET = 1;
@@ -56,47 +56,47 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	}
 
 	@Inject(method = "init", at = @At("TAIL"))
-	private void handytraders$captureVillager(CallbackInfo ci) {
+	private void handytrader$captureVillager(CallbackInfo ci) {
 		Entity target = Minecraft.getInstance().crosshairPickEntity;
 		if (target != null) {
-			this.handytraders$villagerUUID = target.getUUID();
+			this.handytrader$villagerUUID = target.getUUID();
 		}
-		this.handytraders$needsSort = true;
-		this.handytraders$originalOffers = null;
-		this.handytraders$lastKnownOffers = null;
+		this.handytrader$needsSort = true;
+		this.handytrader$originalOffers = null;
+		this.handytrader$lastKnownOffers = null;
 	}
 
 	// -- Sort favorites to top --
 
 	@Inject(method = "extractContents", at = @At("HEAD"))
-	private void handytraders$sortIfNeeded(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
+	private void handytrader$sortIfNeeded(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
 										   float partialTick, CallbackInfo ci) {
 		// Detect server-side offer replacement (restock, level-up, etc.)
 		MerchantOffers currentOffers = this.menu.getOffers();
-		if (handytraders$lastKnownOffers != null && currentOffers != handytraders$lastKnownOffers) {
-			handytraders$originalOffers = null;
-			handytraders$needsSort = true;
+		if (handytrader$lastKnownOffers != null && currentOffers != handytrader$lastKnownOffers) {
+			handytrader$originalOffers = null;
+			handytrader$needsSort = true;
 		}
-		handytraders$lastKnownOffers = currentOffers;
+		handytrader$lastKnownOffers = currentOffers;
 
-		if (!handytraders$needsSort) return;
-		handytraders$needsSort = false;
+		if (!handytrader$needsSort) return;
+		handytrader$needsSort = false;
 
 		// On a re-sort (bookmark toggle or offer refresh), track which actual trade
 		// was selected so we can preserve the selection across the reorder.
-		boolean isResort = handytraders$sortedToActual != null;
+		boolean isResort = handytrader$sortedToActual != null;
 		int oldActualIndex = -1;
-		if (isResort && shopItem >= 0 && shopItem < handytraders$sortedToActual.length) {
-			oldActualIndex = handytraders$sortedToActual[shopItem];
+		if (isResort && shopItem >= 0 && shopItem < handytrader$sortedToActual.length) {
+			oldActualIndex = handytrader$sortedToActual[shopItem];
 		}
 
-		handytraders$sortOffers();
+		handytrader$sortOffers();
 
 		if (isResort && oldActualIndex >= 0) {
 			// Find where the previously selected trade moved in the new sort order
-			if (handytraders$sortedToActual != null) {
-				for (int i = 0; i < handytraders$sortedToActual.length; i++) {
-					if (handytraders$sortedToActual[i] == oldActualIndex) {
+			if (handytrader$sortedToActual != null) {
+				for (int i = 0; i < handytrader$sortedToActual.length; i++) {
+					if (handytrader$sortedToActual[i] == oldActualIndex) {
 						shopItem = i;
 						break;
 					}
@@ -117,23 +117,23 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	}
 
 	@Unique
-	private void handytraders$sortOffers() {
+	private void handytrader$sortOffers() {
 		MerchantOffers offers = this.menu.getOffers();
 		if (offers.isEmpty()) {
-			handytraders$sortedToActual = null;
+			handytrader$sortedToActual = null;
 			return;
 		}
 
 		// Capture the server's original order on first sort (or after server refresh)
-		if (handytraders$originalOffers == null || handytraders$originalOffers.size() != offers.size()) {
-			handytraders$originalOffers = new ArrayList<>(offers);
+		if (handytrader$originalOffers == null || handytrader$originalOffers.size() != offers.size()) {
+			handytrader$originalOffers = new ArrayList<>(offers);
 		}
 
-		if (handytraders$villagerUUID == null || !HandyTradersConfig.get().enableFavorites) {
+		if (handytrader$villagerUUID == null || !HandyTraderConfig.get().enableFavorites) {
 			// Restore original order
 			offers.clear();
-			offers.addAll(handytraders$originalOffers);
-			handytraders$sortedToActual = null;
+			offers.addAll(handytrader$originalOffers);
+			handytrader$sortedToActual = null;
 			return;
 		}
 
@@ -141,9 +141,9 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		List<Integer> favoriteIndices = new ArrayList<>();
 		List<Integer> otherIndices = new ArrayList<>();
 
-		for (int i = 0; i < handytraders$originalOffers.size(); i++) {
-			String hash = TradeHash.hash(handytraders$originalOffers.get(i));
-			if (TradeFavorites.isFavorite(handytraders$villagerUUID, hash)) {
+		for (int i = 0; i < handytrader$originalOffers.size(); i++) {
+			String hash = TradeHash.hash(handytrader$originalOffers.get(i));
+			if (TradeFavorites.isFavorite(handytrader$villagerUUID, hash)) {
 				favoriteIndices.add(i);
 			} else {
 				otherIndices.add(i);
@@ -153,8 +153,8 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		// No favorites — restore original order
 		if (favoriteIndices.isEmpty()) {
 			offers.clear();
-			offers.addAll(handytraders$originalOffers);
-			handytraders$sortedToActual = null;
+			offers.addAll(handytrader$originalOffers);
+			handytrader$sortedToActual = null;
 			return;
 		}
 
@@ -163,11 +163,11 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		sortedOrder.addAll(favoriteIndices);
 		sortedOrder.addAll(otherIndices);
 
-		handytraders$sortedToActual = sortedOrder.stream().mapToInt(Integer::intValue).toArray();
+		handytrader$sortedToActual = sortedOrder.stream().mapToInt(Integer::intValue).toArray();
 
 		offers.clear();
-		for (int idx : handytraders$sortedToActual) {
-			offers.add(handytraders$originalOffers.get(idx));
+		for (int idx : handytrader$sortedToActual) {
+			offers.add(handytrader$originalOffers.get(idx));
 		}
 	}
 
@@ -180,8 +180,8 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	 * (likely a Mixin/mapping issue with constructor argument modification).
 	 */
 	@Inject(method = "postButtonClick", at = @At("HEAD"), cancellable = true)
-	private void handytraders$remapPostButtonClick(CallbackInfo ci) {
-		if (handytraders$sortedToActual == null) {
+	private void handytrader$remapPostButtonClick(CallbackInfo ci) {
+		if (handytrader$sortedToActual == null) {
 			// No sorting active — let vanilla handle it unmodified
 			return;
 		}
@@ -193,8 +193,8 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 		this.menu.tryMoveItems(this.shopItem);
 		// 3. Send packet with ACTUAL (original) index so the server selects the right trade
 		int actualIndex = this.shopItem;
-		if (this.shopItem >= 0 && this.shopItem < handytraders$sortedToActual.length) {
-			actualIndex = handytraders$sortedToActual[this.shopItem];
+		if (this.shopItem >= 0 && this.shopItem < handytrader$sortedToActual.length) {
+			actualIndex = handytrader$sortedToActual[this.shopItem];
 		}
 		Minecraft.getInstance().getConnection().send(new ServerboundSelectTradePacket(actualIndex));
 
@@ -204,10 +204,10 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	// -- Render favorites overlay --
 
 	@Inject(method = "extractContents", at = @At("TAIL"))
-	private void handytraders$renderFavorites(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
+	private void handytrader$renderFavorites(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
 											  float partialTick, CallbackInfo ci) {
-		if (handytraders$villagerUUID == null) return;
-		if (!HandyTradersConfig.get().enableFavorites) return;
+		if (handytrader$villagerUUID == null) return;
+		if (!HandyTraderConfig.get().enableFavorites) return;
 
 		MerchantOffers offers = this.menu.getOffers();
 		if (offers.isEmpty()) return;
@@ -221,7 +221,7 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 
 			MerchantOffer offer = offers.get(offerIndex);
 			String tradeHash = TradeHash.hash(offer);
-			boolean isFavorite = TradeFavorites.isFavorite(handytraders$villagerUUID, tradeHash);
+			boolean isFavorite = TradeFavorites.isFavorite(handytrader$villagerUUID, tradeHash);
 
 			int buttonY = buttonStartY + i * BUTTON_HEIGHT;
 			int cornerX = buttonX + BOOKMARK_INSET;
@@ -234,17 +234,17 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 				int fill = isCornerHovered ? 0xFFFFE850 : 0xFFDAA520;
 				int highlight = isCornerHovered ? 0xFFFFFF80 : 0xFFFFD700;
 				int shadow = isCornerHovered ? 0xFFC89020 : 0xFF8B6914;
-				handytraders$drawBookmarkCorner(guiGraphics, cornerX, cornerY,
+				handytrader$drawBookmarkCorner(guiGraphics, cornerX, cornerY,
 						fill, highlight, shadow);
 			} else if (isCornerHovered) {
-				handytraders$drawBookmarkCorner(guiGraphics, cornerX, cornerY,
+				handytrader$drawBookmarkCorner(guiGraphics, cornerX, cornerY,
 						0x50FFD700, 0x70FFE850, 0x50B8860B);
 			}
 		}
 	}
 
 	@Unique
-	private void handytraders$drawBookmarkCorner(GuiGraphicsExtractor g, int x, int y,
+	private void handytrader$drawBookmarkCorner(GuiGraphicsExtractor g, int x, int y,
 												 int fillColor, int highlightColor, int shadowColor) {
 		// Fill the triangle body
 		for (int row = 0; row < BOOKMARK_SIZE; row++) {
@@ -265,10 +265,10 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	// -- Bookmark click handling --
 
 	@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-	private void handytraders$onBookmarkClick(MouseButtonEvent event, boolean bl,
+	private void handytrader$onBookmarkClick(MouseButtonEvent event, boolean bl,
 											  CallbackInfoReturnable<Boolean> cir) {
-		if (handytraders$villagerUUID == null) return;
-		if (!HandyTradersConfig.get().enableFavorites) return;
+		if (handytrader$villagerUUID == null) return;
+		if (!HandyTraderConfig.get().enableFavorites) return;
 		if (event.button() != 0) return;
 
 		double mouseX = event.x();
@@ -288,11 +288,11 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 					&& mouseY >= buttonY && mouseY < buttonY + hitSize) {
 				MerchantOffer offer = offers.get(offerIndex);
 				String tradeHash = TradeHash.hash(offer);
-				TradeFavorites.toggleFavorite(handytraders$villagerUUID, tradeHash);
+				TradeFavorites.toggleFavorite(handytrader$villagerUUID, tradeHash);
 				TradeFavorites.save();
 
 				// Trigger re-sort on next frame
-				handytraders$needsSort = true;
+				handytrader$needsSort = true;
 
 				Minecraft.getInstance().player.playSound(
 						SoundEvents.AMETHYST_BLOCK_CHIME, 0.3F, 1.2F);

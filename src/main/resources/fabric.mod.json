@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "handytraders",
+	"id": "handytrader",
 	"version": "${version}",
 	"name": "Handy Trader",
 	"description": "Star your favorite villager trades. Favorited trades get a gold highlight so you can find them instantly in long trade lists.",
@@ -13,23 +13,23 @@
 		"issues": "https://github.com/dfox288/HandyTrader/issues"
 	},
 	"license": "MIT",
-	"icon": "assets/handytraders/icon.png",
+	"icon": "assets/handytrader/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"net.rezanmb.handytraders.HandyTraders"
+			"dev.handy.mods.handytrader.HandyTrader"
 		],
 		"client": [
-			"net.rezanmb.handytraders.client.HandyTradersClient"
+			"dev.handy.mods.handytrader.client.HandyTraderClient"
 		],
 		"modmenu": [
-			"net.rezanmb.handytraders.client.config.ModMenuIntegration"
+			"dev.handy.mods.handytrader.client.config.ModMenuIntegration"
 		]
 	},
 	"mixins": [
-		"handytraders.mixins.json",
+		"handytrader.mixins.json",
 		{
-			"config": "handytraders.client.mixins.json",
+			"config": "handytrader.client.mixins.json",
 			"environment": "client"
 		}
 	],

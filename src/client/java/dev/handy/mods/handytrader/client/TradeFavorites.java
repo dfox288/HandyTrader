@@ -1,4 +1,4 @@
-package net.rezanmb.handytraders.client;
+package dev.handy.mods.handytrader.client;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
-import net.rezanmb.handytraders.HandyTraders;
+import dev.handy.mods.handytrader.HandyTrader;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -17,7 +17,7 @@ import java.util.*;
 
 /**
  * Per-villager trade favorites storage.
- * Persisted as JSON at config/handytraders-favorites.json.
+ * Persisted as JSON at config/handytrader-favorites.json.
  *
  * Structure: { "<villager-uuid>": { "favorites": ["<trade-hash>", ...] } }
  */
@@ -26,6 +26,10 @@ public final class TradeFavorites {
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final Path FAVORITES_PATH = FabricLoader.getInstance()
+			.getConfigDir().resolve("handytrader-favorites.json");
+	// Legacy path from before the v2.1 mod-id rename (handytraders → handytrader).
+	// Read once on first load so user favorites carry over; safe to remove after a few releases.
+	private static final Path LEGACY_FAVORITES_PATH = FabricLoader.getInstance()
 			.getConfigDir().resolve("handytraders-favorites.json");
 	private static final Type DATA_TYPE = new TypeToken<Map<String, VillagerData>>() {}.getType();
 
@@ -51,6 +55,17 @@ public final class TradeFavorites {
 	}
 
 	public static void load() {
+		if (!Files.exists(FAVORITES_PATH) && Files.exists(LEGACY_FAVORITES_PATH)) {
+			try {
+				Files.copy(LEGACY_FAVORITES_PATH, FAVORITES_PATH);
+				HandyTrader.LOGGER.info("Migrated favorites from {} to {}",
+						LEGACY_FAVORITES_PATH.getFileName(), FAVORITES_PATH.getFileName());
+			} catch (IOException e) {
+				HandyTrader.LOGGER.warn("Failed to migrate legacy favorites from {}",
+						LEGACY_FAVORITES_PATH.getFileName(), e);
+			}
+		}
+
 		if (Files.exists(FAVORITES_PATH)) {
 			try (Reader reader = Files.newBufferedReader(FAVORITES_PATH)) {
 				Map<String, VillagerData> loaded = GSON.fromJson(reader, DATA_TYPE);
@@ -58,14 +73,14 @@ public final class TradeFavorites {
 					data = loaded;
 					int totalFavs = loaded.values().stream()
 							.mapToInt(vd -> vd.favorites.size()).sum();
-					HandyTraders.LOGGER.info("Loaded {} favorites for {} villagers from {}",
+					HandyTrader.LOGGER.info("Loaded {} favorites for {} villagers from {}",
 							totalFavs, loaded.size(), FAVORITES_PATH);
 				}
 			} catch (Exception e) {
-				HandyTraders.LOGGER.warn("Failed to load trade favorites", e);
+				HandyTrader.LOGGER.warn("Failed to load trade favorites", e);
 			}
 		} else {
-			HandyTraders.LOGGER.info("No favorites file at {}", FAVORITES_PATH);
+			HandyTrader.LOGGER.info("No favorites file at {}", FAVORITES_PATH);
 		}
 	}
 
@@ -74,7 +89,7 @@ public final class TradeFavorites {
 			Files.createDirectories(FAVORITES_PATH.getParent());
 			Files.writeString(FAVORITES_PATH, GSON.toJson(data, DATA_TYPE));
 		} catch (IOException e) {
-			HandyTraders.LOGGER.warn("Failed to save trade favorites", e);
+			HandyTrader.LOGGER.warn("Failed to save trade favorites", e);
 		}
 	}
 

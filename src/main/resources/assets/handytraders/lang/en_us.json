@@ -1,7 +1,0 @@
-{
-	"config.handytraders.title": "Handy Traders Settings",
-
-	"config.handytraders.category.general": "General",
-	"config.handytraders.enableFavorites": "Enable Favorites",
-	"config.handytraders.enableFavorites.desc": "Allow marking and highlighting favorite trades on villagers."
-}

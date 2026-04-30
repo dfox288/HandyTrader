@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0-beta.3
+
+### Breaking
+- **Mod ID renamed from `handytraders` to `handytrader`** to match the rest of the Handy series convention (singular). Existing config (`config/handytraders.json`) and per-villager favorites (`config/handytraders-favorites.json`) are migrated automatically on first launch — no settings or favorites lost.
+- Internal package moved from `net.rezanmb.handytraders` to `dev.handy.mods.handytrader`. No user-facing impact unless another mod was depending on internal classes.
+
 ## 2.1.0-beta.1
 
 - Preview build for Minecraft **26.2 snapshots** (tested against 26.2-snapshot-3)

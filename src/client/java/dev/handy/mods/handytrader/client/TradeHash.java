@@ -1,4 +1,4 @@
-package net.rezanmb.handytraders.client;
+package dev.handy.mods.handytrader.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

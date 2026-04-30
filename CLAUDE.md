@@ -30,7 +30,7 @@ Uses `splitEnvironmentSourceSets()`:
 - `src/main/` — shared code (client + server)
 - `src/client/` — client-only code (UI overlay, config screen)
 
-Package: `net.rezanmb.handytraders`
+Package: `dev.handy.mods.handytrader` (mod-id: `handytrader`)
 
 ## Dependencies
 
@@ -45,4 +45,5 @@ Maven repos:
 YACL config screen with option for:
 - Enable/disable favorites
 
-Config class: `HandyTradersConfig` — JSON file at `config/handytraders.json`
+Config class: `HandyTraderConfig` — JSON file at `config/handytrader.json` (with one-shot migration from `config/handytraders.json`).
+Per-villager favorites stored at `config/handytrader-favorites.json` (with one-shot migration from `config/handytraders-favorites.json`).

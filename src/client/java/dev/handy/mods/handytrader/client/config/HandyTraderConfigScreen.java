@@ -1,4 +1,4 @@
-package net.rezanmb.handytraders.client.config;
+package dev.handy.mods.handytrader.client.config;
 
 import dev.isxander.yacl3.api.ConfigCategory;
 import dev.isxander.yacl3.api.Option;
@@ -9,27 +9,27 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.rezanmb.handytraders.config.HandyTradersConfig;
+import dev.handy.mods.handytrader.config.HandyTraderConfig;
 
 @Environment(EnvType.CLIENT)
-public class HandyTradersConfigScreen {
+public class HandyTraderConfigScreen {
 
 	public static Screen create(Screen parent) {
-		HandyTradersConfig config = HandyTradersConfig.get();
+		HandyTraderConfig config = HandyTraderConfig.get();
 
 		return YetAnotherConfigLib.createBuilder()
-				.title(Component.translatable("config.handytraders.title"))
+				.title(Component.translatable("config.handytrader.title"))
 				.category(ConfigCategory.createBuilder()
-						.name(Component.translatable("config.handytraders.category.general"))
+						.name(Component.translatable("config.handytrader.category.general"))
 						.option(Option.<Boolean>createBuilder()
-								.name(Component.translatable("config.handytraders.enableFavorites"))
+								.name(Component.translatable("config.handytrader.enableFavorites"))
 								.description(OptionDescription.of(
-										Component.translatable("config.handytraders.enableFavorites.desc")))
+										Component.translatable("config.handytrader.enableFavorites.desc")))
 								.binding(true, () -> config.enableFavorites, val -> config.enableFavorites = val)
 								.controller(TickBoxControllerBuilder::create)
 								.build())
 						.build())
-				.save(HandyTradersConfig::save)
+				.save(HandyTraderConfig::save)
 				.build()
 				.generateScreen(parent);
 	}
