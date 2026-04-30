@@ -21,7 +21,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"handytraders" {
+		"handytrader" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
