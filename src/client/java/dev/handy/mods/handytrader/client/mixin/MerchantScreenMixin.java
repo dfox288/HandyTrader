@@ -77,7 +77,15 @@ public abstract class MerchantScreenMixin extends AbstractContainerScreen<Mercha
 	}
 
 	// -- Sort favorites to top --
-
+	//
+	// This hook lives on extractContents HEAD rather than tick() despite the
+	// per-frame call rate, because MerchantScreen does not declare its own
+	// tick() — it inherits from Screen — and Mixin only resolves @Inject
+	// targets against methods declared on the target class, not inherited
+	// ones. A tick()V inject on this mixin fails with "could not find any
+	// targets matching tick()V" at class load. Per-frame cost here is
+	// negligible (one ref-equality check + one boolean read) thanks to the
+	// needsSort gate; the body only runs on actual triggers.
 	@Inject(method = "extractContents(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V", at = @At("HEAD"))
 	private void handytrader$sortIfNeeded(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY,
 										   float partialTick, CallbackInfo ci) {
