@@ -28,7 +28,8 @@ public final class TradeHash {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-1");
 			byte[] out = md.digest(key.getBytes(StandardCharsets.UTF_8));
-			return HexFormat.of().formatHex(out).substring(0, 16);
+			// First 8 bytes → 16 hex chars; avoids allocating the full 40-char string.
+			return HexFormat.of().formatHex(out, 0, 8);
 		} catch (NoSuchAlgorithmException e) {
 			throw new IllegalStateException("SHA-1 unavailable", e);
 		}
