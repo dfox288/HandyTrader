@@ -39,8 +39,9 @@ dependencies {
 	}
 	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-	// Dev runtime extras: disabled on port/26.2 until YACL + ModMenu ship 26.2-compatible
-	// builds. Mod behaviour is YACL-free so this doesn't affect smoke testing.
+	// Dev runtime extras: disabled until YACL + ModMenu publish a build that lists the
+	// current MC version (26.2-pre-1) in game_versions. Compile classpath is already on
+	// the 26.2-line releases (see gradle.properties); only runtime registration is gated.
 	// localRuntime("maven.modrinth:yacl:${project.yacl_version}") {
 	// 	exclude(group: "net.fabricmc.fabric-api")
 	// }

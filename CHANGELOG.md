@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0-beta.4
+
+- Tracks Minecraft **26.2-pre-1** (first prerelease of the 26.2 cycle); skips snapshots 6, 7, and 8 since none broke this mod's surface.
+- Rebuilt against Fabric API **0.149.2+26.2**.
+- YACL bumped to **3.9.3+26.2-fabric** and ModMenu to **19.0.0-alpha.1** on the compile classpath. Neither has a build that explicitly lists `26.2-pre-1` in its game_versions yet, so they remain `compileOnly` — the in-game config screen returns to dev runtime once either ships a matching build.
+
 ## 2.1.0-beta.3
 
 ### Breaking
