@@ -17,7 +17,7 @@ Star the trades you use most and they sort to the top of the list automatically 
 
 ## Requirements
 
-- Minecraft Java Edition 26.1.x
+- Minecraft Java Edition 26.1.x (stable) or 26.2 prerelease (beta channel)
 - [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.2+
 - [Fabric API](https://modrinth.com/mod/fabric-api) matching your Minecraft version
 
@@ -32,7 +32,7 @@ Without these, everything works with sensible defaults. You can also edit `confi
 
 ### Single Player
 
-1. Install Fabric Loader for Minecraft 26.1.x
+1. Install Fabric Loader for Minecraft 26.1.x (or 26.2 prerelease, if you're using the beta build)
 2. Download Fabric API and place it in your `mods/` folder
 3. Download Handy Trader and place it in your `mods/` folder
 4. Launch the game and open a villager trade screen!
