@@ -6,13 +6,13 @@ A Fabric mod that adds star/favorite toggles to the villager trading UI. Favorit
 
 ## Tech Stack
 
-- **Minecraft**: 26.1 (first unobfuscated version — no mappings needed)
-- **Fabric Loader**: 0.18.4
-- **Fabric API**: 0.144.0+26.1
+- **Minecraft**: 26.2 (unobfuscated — no mappings needed)
+- **Fabric Loader**: 0.19.3
+- **Fabric API**: 0.152.1+26.2
 - **Fabric Loom**: 1.15.5
 - **Java**: 25
-- **YACL**: 3.9.0+26.1-fabric (soft dependency, via Modrinth Maven `maven.modrinth:yacl`)
-- **ModMenu**: 18.0.0-alpha.6 (soft dependency)
+- **YACL**: 3.9.4+26.2-fabric (soft dependency, via Modrinth Maven `maven.modrinth:yacl`)
+- **ModMenu**: 20.0.0-beta.2 (soft dependency)
 
 ## Build
 
@@ -26,11 +26,11 @@ Always prefix commands with `cd /path &&` so they auto-approve via permission ru
 
 ## Project Structure
 
-Uses `splitEnvironmentSourceSets()`:
-- `src/main/` — shared code (client + server)
-- `src/client/` — client-only code (UI overlay, config screen)
+Client-only mod — `fabric.mod.json` declares `environment: "client"`, no main entrypoint. Uses `splitEnvironmentSourceSets()`:
+- `src/main/` — shared code (config class + LOGGER holder; loaded everywhere when present)
+- `src/client/` — client-only code (UI overlay, config screen, mixin)
 
-Package: `net.rezanmb.handytraders`
+Package: `dev.handy.mods.handytrader` (mod-id: `handytrader`)
 
 ## Dependencies
 
@@ -45,4 +45,5 @@ Maven repos:
 YACL config screen with option for:
 - Enable/disable favorites
 
-Config class: `HandyTradersConfig` — JSON file at `config/handytraders.json`
+Config class: `HandyTraderConfig` — JSON file at `config/handytrader.json` (with one-shot migration from `config/handytraders.json`).
+Per-villager favorites stored at `config/handytrader-favorites.json` (with one-shot migration from `config/handytraders-favorites.json`).

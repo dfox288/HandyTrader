@@ -1,4 +1,4 @@
-package net.rezanmb.handytraders.client.config;
+package dev.handy.mods.handytrader.client.config;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
@@ -12,7 +12,7 @@ public class ModMenuIntegration implements ModMenuApi {
 	@Override
 	public ConfigScreenFactory<?> getModConfigScreenFactory() {
 		if (FabricLoader.getInstance().isModLoaded("yet_another_config_lib_v3")) {
-			return HandyTradersConfigScreen::create;
+			return HandyTraderConfigScreen::create;
 		}
 		return parent -> null;
 	}

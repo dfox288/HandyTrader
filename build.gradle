@@ -21,7 +21,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"handytraders" {
+		"handytrader" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
@@ -39,7 +39,10 @@ dependencies {
 	}
 	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-	// Include in dev runtime for testing the config screen
+	// Dev runtime extras: YACL ships a real 26.2 build (3.9.4+26.2-fabric) so it loads in the
+	// dev client and the config screen is reachable. ModMenu is enabled too; if its current
+	// build doesn't list 26.2 in game_versions, Loader may reject it at runtime — harmless for
+	// the shipped jar since both are compileOnly there.
 	localRuntime("maven.modrinth:yacl:${project.yacl_version}") {
 		exclude(group: "net.fabricmc.fabric-api")
 	}
@@ -48,6 +51,8 @@ dependencies {
 
 processResources {
 	inputs.property "version", project.version
+
+	exclude '**/CLAUDE.md'
 
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version

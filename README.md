@@ -1,6 +1,6 @@
 # Handy Trader
 
-A Fabric mod for Minecraft 26.1.x that lets you bookmark favorite villager trades.
+A Fabric mod that lets you bookmark favorite villager trades. Targets Minecraft 26.2.
 
 Star the trades you use most and they sort to the top of the list automatically — perfect for big trading halls where you only use 2 out of 10 master trades per villager.
 
@@ -17,8 +17,8 @@ Star the trades you use most and they sort to the top of the list automatically 
 
 ## Requirements
 
-- Minecraft Java Edition 26.1.x
-- [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.2+
+- Minecraft Java Edition 26.2
+- [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.3+
 - [Fabric API](https://modrinth.com/mod/fabric-api) matching your Minecraft version
 
 ### Optional (for config screen)
@@ -26,13 +26,13 @@ Star the trades you use most and they sort to the top of the list automatically 
 - [ModMenu](https://modrinth.com/mod/modmenu) — adds a Configure button in the mod list
 - [YACL](https://modrinth.com/mod/yacl) — powers the in-game config screen
 
-Without these, everything works with sensible defaults. You can also edit `config/handytraders.json` manually.
+Without these, everything works with sensible defaults. You can also edit `config/handytrader.json` manually.
 
 ## Installation
 
 ### Single Player
 
-1. Install Fabric Loader for Minecraft 26.1.x
+1. Install Fabric Loader for Minecraft 26.2
 2. Download Fabric API and place it in your `mods/` folder
 3. Download Handy Trader and place it in your `mods/` folder
 4. Launch the game and open a villager trade screen!

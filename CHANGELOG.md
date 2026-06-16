@@ -1,9 +1,39 @@
 # Changelog
 
-## 2.0.3
+## 2.2.0
 
-### Bug Fixes
-- **Restore compatibility with other mods that mix into the villager trade screen** — the trade-index remapping no longer cancels and reimplements vanilla `postButtonClick`, so bookmark mods, autoclickers, and any other mod injecting into the same method run normally again
+Updated for the **Minecraft 26.2** full release.
+
+- Rebuilt against Fabric API **0.152.1+26.2** and Fabric Loader **0.19.3**.
+- YACL updated to **3.9.4+26.2-fabric** and ModMenu to **20.0.0-beta.2**; with YACL's stable 26.2 build out, the in-game config screen is back in dev and live play.
+- Now declares compatibility with `26.2` and future `26.2.x` point releases.
+
+## 2.1.0-beta.4
+
+- Tracks Minecraft **26.2-pre-1** (first prerelease of the 26.2 cycle); skips snapshots 6, 7, and 8 since none broke this mod's surface.
+- Rebuilt against Fabric API **0.149.2+26.2**.
+- YACL bumped to **3.9.3+26.2-fabric** and ModMenu to **19.0.0-alpha.1** on the compile classpath. Neither has a build that explicitly lists `26.2-pre-1` in its game_versions yet, so they remain `compileOnly` — the in-game config screen returns to dev runtime once either ships a matching build.
+
+## 2.1.0-beta.3
+
+### Breaking
+- **Mod ID renamed from `handytraders` to `handytrader`** to match the rest of the Handy series convention (singular). Existing config (`config/handytraders.json`) and per-villager favorites (`config/handytraders-favorites.json`) are migrated automatically on first launch — no settings or favorites lost.
+- Internal package moved from `net.rezanmb.handytraders` to `dev.handy.mods.handytrader`. No user-facing impact unless another mod was depending on internal classes.
+
+### Changes
+- **Trade-identity hash upgraded from 32-bit hashCode to 64-bit truncated SHA-1.** Eliminates the silent collision risk where two distinct trades on the same villager could star/unstar each other. Existing favorites are rewritten to the new format the first time you reopen each villager — no manual reset needed, but villagers you never revisit stay on the old format.
+- **Mod is now declared client-only** (`environment: "client"`). Dedicated servers no longer load the jar; the mod was already client-only in behavior, this just makes it explicit.
+- **Favorites file write moved off the render thread** so toggling a bookmark on a slow disk no longer stalls the frame.
+- **Config persistence rebuilt on YACL `ConfigClassHandler`** (matches the rest of the Handy suite). On-disk JSON shape is unchanged; users without YACL installed still run on defaults.
+
+### Internal
+- Cleanup wave aligned this mod with the rest of the suite — JAVA_25 mixin compatibility level, full @At descriptors, named bookmark color palette, narrowed exception handlers, and a CI release workflow that no longer fails on prerelease tags.
+
+## 2.1.0-beta.1
+
+- Preview build for Minecraft **26.2 snapshots** (tested against 26.2-snapshot-3)
+- Rebuilt against Fabric API 0.146.1+26.2
+- No source changes needed — the trade-menu mixins and favorites overlay compile cleanly against 26.2
 
 ## 2.0.2
 
