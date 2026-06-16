@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.0
+
+Updated for the **Minecraft 26.2** full release.
+
+- Rebuilt against Fabric API **0.152.1+26.2** and Fabric Loader **0.19.3**.
+- YACL updated to **3.9.4+26.2-fabric** and ModMenu to **20.0.0-beta.2**; with YACL's stable 26.2 build out, the in-game config screen is back in dev and live play.
+- Now declares compatibility with `26.2` and future `26.2.x` point releases.
+
 ## 2.1.0-beta.4
 
 - Tracks Minecraft **26.2-pre-1** (first prerelease of the 26.2 cycle); skips snapshots 6, 7, and 8 since none broke this mod's surface.

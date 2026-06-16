@@ -39,13 +39,14 @@ dependencies {
 	}
 	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-	// Dev runtime extras: disabled until YACL + ModMenu publish a build that lists the
-	// current MC version (26.2-pre-1) in game_versions. Compile classpath is already on
-	// the 26.2-line releases (see gradle.properties); only runtime registration is gated.
-	// localRuntime("maven.modrinth:yacl:${project.yacl_version}") {
-	// 	exclude(group: "net.fabricmc.fabric-api")
-	// }
-	// localRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
+	// Dev runtime extras: YACL ships a real 26.2 build (3.9.4+26.2-fabric) so it loads in the
+	// dev client and the config screen is reachable. ModMenu is enabled too; if its current
+	// build doesn't list 26.2 in game_versions, Loader may reject it at runtime — harmless for
+	// the shipped jar since both are compileOnly there.
+	localRuntime("maven.modrinth:yacl:${project.yacl_version}") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
+	localRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 processResources {

@@ -6,13 +6,13 @@ A Fabric mod that adds star/favorite toggles to the villager trading UI. Favorit
 
 ## Tech Stack
 
-- **Minecraft**: 26.2-pre-1 (unobfuscated — no mappings needed)
-- **Fabric Loader**: 0.19.2
-- **Fabric API**: 0.149.2+26.2
+- **Minecraft**: 26.2 (unobfuscated — no mappings needed)
+- **Fabric Loader**: 0.19.3
+- **Fabric API**: 0.152.1+26.2
 - **Fabric Loom**: 1.15.5
 - **Java**: 25
-- **YACL**: 3.9.3+26.2-fabric (soft dependency, via Modrinth Maven `maven.modrinth:yacl`)
-- **ModMenu**: 19.0.0-alpha.1 (soft dependency)
+- **YACL**: 3.9.4+26.2-fabric (soft dependency, via Modrinth Maven `maven.modrinth:yacl`)
+- **ModMenu**: 20.0.0-beta.2 (soft dependency)
 
 ## Build
 
