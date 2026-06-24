@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.4
+
+### Bug Fixes
+- **Villager Trading Plus / "Easier Villager Trading" compatibility — now for 26.1 and 26.1.1 too.** Clicking a favorited trade with "trade all on click" enabled does the bulk trade again instead of vanilla single-trade. This fix shipped in 2.0.3 but was only published for Minecraft 26.1.2; 2.0.4 publishes the same build for 26.1 and 26.1.1 as well. (#20)
+
 ## 2.0.3
 
 ### Bug Fixes

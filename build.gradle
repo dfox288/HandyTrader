@@ -94,7 +94,7 @@ modrinth {
 	              project.mod_version.contains("-alpha") ? "alpha" :
 	              project.mod_version.contains("-rc") ? "beta" : "release"
 	uploadFile = jar
-	gameVersions = [project.minecraft_version]
+	gameVersions = project.publish_game_versions.split(",").collect { it.trim() }
 	loaders = ["fabric"]
 	changelog = rootProject.file("CHANGELOG.md").exists() ? extractChangelog(rootProject.file("CHANGELOG.md").text, project.mod_version) : ""
 	dependencies {
@@ -114,7 +114,7 @@ tasks.register('curseforge', net.darkhax.curseforgegradle.TaskPublishCurseForge)
 	                       project.mod_version.contains("-alpha") ? 'alpha' :
 	                       project.mod_version.contains("-rc") ? 'beta' : 'release'
 	mainFile.addModLoader('Fabric')
-	mainFile.addGameVersion(project.minecraft_version)
+	project.publish_game_versions.split(",").collect { it.trim() }.each { mainFile.addGameVersion(it) }
 	mainFile.addJavaVersion('Java 25')
 	mainFile.addRequirement('fabric-api')
 }

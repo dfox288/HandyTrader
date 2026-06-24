@@ -5,6 +5,7 @@ on:
     tags: ['v*']
 
 permissions:
+  id-token: write   # OIDC for Infisical
   contents: write
 
 jobs:
@@ -12,6 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Fetch publish tokens from Infisical
+        uses: Infisical/secrets-action@v1.0.7
+        with:
+          method: oidc
+          domain: https://secrets.tastatur-und-maus.net
+          identity-id: ${{ secrets.INFISICAL_IDENTITY_ID }}
+          project-slug: ${{ secrets.INFISICAL_PROJECT_SLUG }}
+          env-slug: prod
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -37,9 +47,9 @@ jobs:
           MC_VERSION=$(grep '^minecraft_version=' gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           # Check if tag is a stable release (no pre-release suffix)
-          if ! echo "$TAG_VERSION" | grep -qE '-(beta|alpha|rc)'; then
+          if ! echo "$TAG_VERSION" | grep -qE -- '-(beta|alpha|rc)'; then
             # Stable release — MC version must also be stable
-            if echo "$MC_VERSION" | grep -qE '-(pre|rc|snapshot)'; then
+            if echo "$MC_VERSION" | grep -qE -- '-(pre|rc|snapshot)'; then
               echo "::error::Stable release ($TAG_VERSION) cannot target pre-release Minecraft version ($MC_VERSION)"
               exit 1
             fi
@@ -48,7 +58,7 @@ jobs:
 
       - name: Determine pre-release status
         run: |
-          if echo "$VERSION" | grep -qE '-(beta|alpha|rc)'; then
+          if echo "$VERSION" | grep -qE -- '-(beta|alpha|rc)'; then
             echo "IS_PRERELEASE=true" >> "$GITHUB_ENV"
           else
             echo "IS_PRERELEASE=false" >> "$GITHUB_ENV"
@@ -100,9 +110,10 @@ jobs:
       - name: Publish to Modrinth
         run: ./gradlew modrinth
         env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_TOKEN: ${{ env.MODRINTH_TOKEN }}
 
       - name: Publish to CurseForge
+        if: env.IS_PRERELEASE == 'false'
         run: ./gradlew curseforge
         env:
-          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ env.CURSEFORGE_TOKEN }}
